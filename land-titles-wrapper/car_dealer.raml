@@ -1,0 +1,204 @@
+#%RAML 0.8
+title: Car Dealer API
+version: 1.0
+baseUri: /
+protocols: [HTTPS]
+mediaType: "application/json"
+/cars:
+  displayName: Cars
+  description: |
+    Cars Collection
+    
+  get:
+    description: |
+      GET list of cars, filtered by criteria
+      
+    protocols: [HTTPS]
+    queryParameters:
+      color:
+        displayName: Color
+        description: |
+          Filter the results based upon the colour of the car
+          
+        type: string
+        example: |
+          black
+          
+      year:
+        displayName: Year
+        description: |
+          Filter the results based upon the year of production
+          
+        type: string
+        example: |
+          2014
+          
+      model:
+        displayName: Make/Model
+        description: |
+          Filter the results based upon the make/model of the car (exact meaning of this TBD)
+          
+        type: string
+      manufacturer:
+        displayName: Manufacturer
+        description: |
+          Filter the results based upon the manufacturer of the car
+          
+        type: string
+    responses:
+      200:
+        body:
+          application/json:
+            example: |
+              {
+                cars:[
+                  {
+                    plate: "MYMODT1",
+                    color: "black",
+                    model: "T",
+                    manufacturer: "ford",
+                    year: "1922"
+                  },
+                  {
+                    plate: "2NOGA55",
+                    color: "black",
+                    model: "3",
+                    manufacturer: "tesla",
+                    year: "2017"
+                  }
+                ]
+              }
+              
+  post:
+    description: |
+      Add a new (or second-hand... but new to the network) car to the dealer network
+      
+    protocols: [HTTPS]
+    headers:
+      owner:
+        displayName: Owner
+        description: |
+          Identify who is making the call in the header, since there likely isn't going to be authN on this
+          
+        type: string
+        example: |
+          Dealer A
+          
+    body:
+      application/json:
+        example: |
+          {
+            plate: "4PWR123",
+            color: "red",
+            model: "3",
+            manufacturer: "tesla",
+            year: "2017",
+            description: "Awesome go-fast zoom zoom car",
+            condition: "good"
+          }
+          
+    responses:
+      204:
+  /{carId}:
+    displayName: Car
+    description: |
+      Individual Car
+      
+    uriParameters:
+      carId:
+        displayName: carId
+        description: |
+          This is the car identifier - probably the number plate
+          
+        type: string
+        example: |
+          5NOGA55
+          
+        required: true
+    get:
+      description: |
+        GET the full car description
+        
+      responses:
+        200:
+          body:
+            application/json:
+              example: |
+                {
+                  plate: "2NOGA55",
+                  color: "black",
+                  model: "3",
+                  manufacturer: "tesla",
+                  year: "2017",
+                  description: "Awesome go-fast zoom zoom car",
+                  condition: "good",
+                  owner: "Dealer A"
+                }
+                
+    /history:
+      displayName: Car History
+      description: |
+        Read only history of car transfer through the dealer network
+        
+      get:
+        description: |
+          GET the history of this car in the dealer network
+          
+        responses:
+          200:
+            body:
+              application/json:
+                example: |
+                  {
+                    history:[
+                      {
+                        tx_id: "4fcba1d6f5f196b076823574d8bc37f4496cb6fa993abbdf420d76c1383268ed",
+                        timestamp: "2017-07-04 01:00:00.000 +0000 UTC",
+                        description: "Added to network by Dealer A"
+                      },
+                      {
+                        tx_id: "20cac628b1fa8ff2ab1333e3a016da9243de1fa27e37d17e5e49c9f01f4f131c",
+                        timestamp: "2017-07-08 01:00:00.000 +0000 UTC",
+                        description: "Transferred from Dealer A to private buyer"
+                      },
+                      {
+                        tx_id: "d6a187f3358c537fc98cccd33740d5fa6499fa856171c8c17cff5dc2d413e503",
+                        timestamp: "2018-01-06 01:00:00.000 +0000 UTC",
+                        description: "Added to network by Dealer B, condition changed to 'fair"
+                      },
+                      {
+                        tx_id: "3d4af08344539e7582b7595cd095661f7073f43f398472f4cb470f179af8aaae",
+                        timestamp: "2018-01-12 01:00:00.000 +0000 UTC",
+                        description: "Transferred from Dealer B to Dealer C"
+                      }
+                    ]
+                  }
+                  
+    /owner:
+      displayName: Car Owner
+      description: |
+        Handler to manipulate ownership
+        
+      put:
+        description: |
+          Transfer ownership of the car - Assumed to be called from the current owner, setting the new owner. If new_owner is omitted, the car is assumed to have been transferred to a private buyer, and is removed from the dealer network.
+          
+        headers:
+          owner:
+            displayName: Owner
+            description: |
+              Identify who is making the call in the header, since there likely isn't going to be authN on this
+              
+            type: string
+            example: |
+              Dealer A
+              
+        body:
+          application/json:
+            example: |
+              {
+                new_owner:"Dealer B"
+              }
+              
+        responses:
+          204:
