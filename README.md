@@ -17,7 +17,8 @@ git push -u origin master
 git remote add origin https://github.com/rafaelgomeztellez/colombia-land-titles-blockchain.git
 git push -u origin master
 
-
+- Actualizar Version local: usar comando
+git pull origin master
 
 ## Preparacion de BD ##########################
 
